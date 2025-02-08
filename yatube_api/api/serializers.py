@@ -38,7 +38,6 @@ class GroupSerializer(serializers.ModelSerializer):
 
 
 class FollowSerializer(serializers.ModelSerializer):
-
     user = serializers.SlugRelatedField(
         read_only=True,
         slug_field='username',
@@ -51,7 +50,7 @@ class FollowSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Follow
-        fields = '__all__'
+        fields = ('user', 'following')  # Исключаем 'id'
         validators = (
             UniqueTogetherValidator(
                 queryset=Follow.objects.all(),
@@ -61,6 +60,7 @@ class FollowSerializer(serializers.ModelSerializer):
         )
 
     def validate_following(self, following):
+        """Запрещает подписку на самого себя."""
         request = self.context.get('request')
         if request.user == following:
             raise serializers.ValidationError(
